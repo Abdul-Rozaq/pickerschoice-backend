@@ -1,10 +1,5 @@
 package com.pickerschoice.pickerschoice.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
-@AllArgsConstructor
-@NoArgsConstructor
 public class RegistrationRequest {
 	private String firstName;
 	private String lastName;
