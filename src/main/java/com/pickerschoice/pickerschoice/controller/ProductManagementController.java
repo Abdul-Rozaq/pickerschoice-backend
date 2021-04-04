@@ -34,8 +34,7 @@ public class ProductManagementController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Product> getProductById(@PathVariable("productId") int productId) {
     	Optional<Product> product = productService.findProductById(productId);
-//    	Optional<Product> product = productDao.findProductById(productId);
-    	if (product.isEmpty()) {
+    	if (!product.isPresent()) {
     		throw new AppAuthException(String.format(PRODUCT_NOT_FOUND, productId));
     	}
         return new ResponseEntity<>( product.get(), HttpStatus.OK);
