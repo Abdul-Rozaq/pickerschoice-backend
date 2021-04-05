@@ -17,7 +17,7 @@ public class ConfirmationToken {
 	private LocalDateTime createdAt = LocalDateTime.now();
 
 	@Column(nullable = false, name = "expires_at")
-	private LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(15);
+	private LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
 
 	@Column(name = "confirmed_at")
 	private LocalDateTime confirmedAt = null;
