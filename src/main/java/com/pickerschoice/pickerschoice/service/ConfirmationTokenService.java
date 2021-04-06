@@ -1,5 +1,7 @@
 package com.pickerschoice.pickerschoice.service;
 
+import java.time.LocalDateTime;
+
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,5 +28,12 @@ public class ConfirmationTokenService {
     @Transactional
     public ConfirmationToken getToken(String token) {
         return confirmationTokenRepository.findByToken(token).orElseThrow(() -> new AppAuthException("Token does not exist"));
+    }
+    
+    @Transactional
+    public int updateConfirmation(String token) {
+    	LocalDateTime confirmedAt = LocalDateTime.now();
+    	
+    	return confirmationTokenRepository.updateConfirmation(token, confirmedAt);
     }
 }

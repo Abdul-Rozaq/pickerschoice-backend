@@ -50,6 +50,8 @@ public class RegistrationService {
 
 		confirmationToken.setToken(token);
 		appUserService.enableAppUser(confirmationToken.getCustomer().getEmail());
+		confirmationTokenService.updateConfirmation(token);
+		
 		return "confirmed";
 	}
 }
