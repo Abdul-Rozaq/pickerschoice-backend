@@ -10,11 +10,11 @@ public class OrderResponse {
     private String address;
     private LocalDate orderDate;
     private Double total;
-    private Boolean delivered;
+    private String status;
     private Boolean paid;
 
     public OrderResponse(int orderId, int customerId, String customerName, String phone, String address,
-                         LocalDate orderDate, Double total, Boolean delivered, Boolean paid) {
+                         LocalDate orderDate, Double total, String status, Boolean paid) {
         this.orderId = orderId;
         this.customerId = customerId;
         this.customerName = customerName;
@@ -22,7 +22,7 @@ public class OrderResponse {
         this.address = address;
         this.orderDate = orderDate;
         this.total = total;
-        this.delivered = delivered;
+        this.status = status;
         this.paid = paid;
     }
 
@@ -82,12 +82,12 @@ public class OrderResponse {
         this.total = total;
     }
 
-    public Boolean getDelivered() {
-        return delivered;
+    public String getStatus() {
+        return status;
     }
 
-    public void setDelivered(Boolean delivered) {
-        this.delivered = delivered;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Boolean getPaid() {

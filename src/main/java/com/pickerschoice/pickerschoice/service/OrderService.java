@@ -1,7 +1,7 @@
 package com.pickerschoice.pickerschoice.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
+//import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.pickerschoice.pickerschoice.dto.OrderRequest;
 import com.pickerschoice.pickerschoice.dto.OrderResponse;
 import com.pickerschoice.pickerschoice.exception.AppAuthException;
+import com.pickerschoice.pickerschoice.mapper.OrderMapper;
 import com.pickerschoice.pickerschoice.model.Customer;
 import com.pickerschoice.pickerschoice.model.Order;
 import com.pickerschoice.pickerschoice.repository.CustomerRepository;
@@ -24,15 +25,21 @@ public class OrderService {
     private OrderRepository orderRepository;
     private CustomerRepository customerRepository;
     private OrderItemRepository orderItemRepository;
+    private OrderMapper orderMapper;
+    private NotificationService notificationService;
 
     @Autowired
     public OrderService(OrderRepository orderRepository,
                         CustomerRepository customerRepository,
-                        OrderItemRepository orderItemRepository
+                        OrderItemRepository orderItemRepository,
+                        OrderMapper orderMapper,
+                        NotificationService notificationService
     ) {
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
         this.orderItemRepository = orderItemRepository;
+        this.orderMapper = orderMapper;
+        this.notificationService = notificationService;
     }
 
     /* CREATE A NEW ORDER */
@@ -49,8 +56,9 @@ public class OrderService {
             _order.addItems(orderItem);
             orderItemRepository.save(orderItem);
         });
-
-        return getOrderResponse(_order);
+        
+//        notificationService
+        return orderMapper.mapToDto(_order);
     }
 
     /* FETCH ALL ORDERS */
@@ -58,10 +66,7 @@ public class OrderService {
     public List<OrderResponse> findAllOrders() {
         List<Order> orders = orderRepository.findAll();
 
-        return orders
-                .stream()
-                .map(order -> getOrderResponse(order))
-                .collect(Collectors.toList());
+        return orderMapper.mapAllToDto(orders);
     }
 
     /* FETCH AN ORDER BY ORDER-ID */
@@ -71,7 +76,7 @@ public class OrderService {
                 .findById(orderId)
                 .orElseThrow(() -> new AppAuthException(String.format(ORDER_NOT_FOUND, orderId)));
 
-        return getOrderResponse(order);
+        return orderMapper.mapToDto(order);
     }
 
     /* FETCH ALL ORDERS FOR A CUSTOMER USING CUSTOMER ID */
@@ -82,11 +87,8 @@ public class OrderService {
                 .orElseThrow(() -> new AppAuthException(String.format(CUSTOMER_NOT_FOUND, customerId)));
 
         List<Order> customerOrderList = orderRepository.findAllByCustomer_CustomerId(customer.getCustomerId());
-
-        return customerOrderList
-                .stream()
-                .map(order -> getOrderResponse(order))
-                .collect(Collectors.toList());
+        
+        return orderMapper.mapAllToDto(customerOrderList);
     }
 
     /* FETCH AN ORDER FOR A CUSTOMER */
@@ -97,14 +99,25 @@ public class OrderService {
                 .orElseThrow(() -> new AppAuthException(String.format(CUSTOMER_NOT_FOUND, customerId)));
 
         Order order = orderRepository.findByCustomer_CustomerIdAndOrderId(customer.getCustomerId(), orderId);
-        return getOrderResponse(order);
+
+        return orderMapper.mapToDto(order);
     }
 
-    private OrderResponse getOrderResponse(Order order) {
-        return new OrderResponse(
-                order.getOrderId(), order.getCustomer().getCustomerId(), order.getCustomerName(),
-                order.getPhone(), order.getAddress(), order.getOrderDate(), order.getTotal(),
-                order.getDelivered(), order.getPaid()
-        );
-    }
+    /* UPDATE ORDER STATUS */
+    @Transactional
+	public OrderResponse updateOrderStatus(int orderId) {
+        Order order = orderRepository
+                .findById(orderId)
+                .orElseThrow(() -> new AppAuthException(String.format(ORDER_NOT_FOUND, orderId)));
+        
+        if (order.getStatus().equalsIgnoreCase("pending")) 
+        	order.setStatus("processed");        	
+        else if (order.getStatus().equalsIgnoreCase("processed")) 
+        	order.setStatus("delivered");
+        else if (order.getStatus().equalsIgnoreCase("delivered"))
+        	return orderMapper.mapToDto(order);
+        
+        Order _order = orderRepository.save(order);
+		return orderMapper.mapToDto(_order);
+	}
 }

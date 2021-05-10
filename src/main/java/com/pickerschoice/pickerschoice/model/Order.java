@@ -34,8 +34,8 @@ public class Order {
     private String address;
     @Column(name = "order_date")
     private LocalDate orderDate = LocalDate.now();
-    @Column(name = "delivered")
-    private Boolean delivered = false;
+    @Column(name = "status")
+    private String status;
     @Column(name = "total")
     private Double total;
     @Column(name = "paid")
@@ -52,18 +52,18 @@ public class Order {
     }
 
     public Order(String customerName, String phone, String address, Double total,
-                 LocalDate orderDate, Boolean delivered, Boolean paid) {
+                 LocalDate orderDate, String status, Boolean paid) {
         this.customerName = customerName;
         this.phone = phone;
         this.address = address;
         this.total = total;
         this.orderDate = orderDate;
-        this.delivered = delivered;
         this.paid = paid;
+        this.status = status;
     }
 
     public Order(int orderId, Customer customer, String customerName, String phone, String address, LocalDate orderDate,
-			Boolean delivered, Double total, Boolean paid) 
+			String status, Double total, Boolean paid) 
     {
 		this.orderId = orderId;
 		this.customer = customer;
@@ -71,24 +71,12 @@ public class Order {
 		this.phone = phone;
 		this.address = address;
 		this.orderDate = orderDate;
-		this.delivered = delivered;
 		this.total = total;
 		this.paid = paid;
+		this.status = status;
 	}
 
-	@Override
-    public String toString() {
-        return "Order{" +
-                "orderId=" + orderId +
-                ", customerName='" + customerName + '\'' +
-                ", phone='" + phone + '\'' +
-                ", address='" + address + '\'' +
-                ", orderDate=" + orderDate +
-                ", delivered=" + delivered +
-                ", total=" + total +
-                ", paid=" + paid +
-                '}';
-    }
+
 
     public int getOrderId() {
         return orderId;
@@ -138,12 +126,12 @@ public class Order {
         this.orderDate = orderDate;
     }
 
-    public Boolean getDelivered() {
-        return delivered;
+    public String getStatus() {
+        return status;
     }
 
-    public void setDelivered(Boolean delivered) {
-        this.delivered = delivered;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Double getTotal() {
