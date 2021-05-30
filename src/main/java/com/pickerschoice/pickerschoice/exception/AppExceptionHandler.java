@@ -8,8 +8,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @ControllerAdvice
 public class AppExceptionHandler extends ResponseEntityExceptionHandler {
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponseClass> handleException(AppAuthException e){
+    @ExceptionHandler(value = {AppAuthException.class})
+    public ResponseEntity<Object> handleException(AppAuthException e){
         ErrorResponseClass error = new ErrorResponseClass();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setMessage(e.getMessage());

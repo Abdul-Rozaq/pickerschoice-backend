@@ -1,9 +1,8 @@
 package com.pickerschoice.pickerschoice.service;
 
 import java.util.List;
-//import java.util.stream.Collectors;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +16,10 @@ import com.pickerschoice.pickerschoice.repository.CustomerRepository;
 import com.pickerschoice.pickerschoice.repository.OrderItemRepository;
 import com.pickerschoice.pickerschoice.repository.OrderRepository;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class OrderService {
     private static final String CUSTOMER_NOT_FOUND = "Customer %s not found";
     private static final String ORDER_NOT_FOUND = "Order %s not found";
@@ -26,30 +28,15 @@ public class OrderService {
     private CustomerRepository customerRepository;
     private OrderItemRepository orderItemRepository;
     private OrderMapper orderMapper;
-    private NotificationService notificationService;
-
-    @Autowired
-    public OrderService(OrderRepository orderRepository,
-                        CustomerRepository customerRepository,
-                        OrderItemRepository orderItemRepository,
-                        OrderMapper orderMapper,
-                        NotificationService notificationService
-    ) {
-        this.orderRepository = orderRepository;
-        this.customerRepository = customerRepository;
-        this.orderItemRepository = orderItemRepository;
-        this.orderMapper = orderMapper;
-        this.notificationService = notificationService;
-    }
+    private AuthService authService;
 
     /* CREATE A NEW ORDER */
     @Transactional
-    public OrderResponse saveOrder(int customerId, OrderRequest request) {
-        Customer customer = customerRepository
-                .findById(customerId)
-                .orElseThrow(() -> new AppAuthException(String.format(CUSTOMER_NOT_FOUND, customerId)));
-
+    public OrderResponse saveOrder(OrderRequest request) {
+        Customer customer = authService.getCurrentCustomer();
+        
         customer.createOrder(request.getOrder());
+        request.getOrder().setStatus("pending");
         Order _order = orderRepository.save(request.getOrder());
 
         request.getOrderItems().forEach(orderItem -> {
@@ -57,16 +44,17 @@ public class OrderService {
             orderItemRepository.save(orderItem);
         });
         
-//        notificationService
         return orderMapper.mapToDto(_order);
     }
 
     /* FETCH ALL ORDERS */
     @Transactional
     public List<OrderResponse> findAllOrders() {
-        List<Order> orders = orderRepository.findAll();
-
-        return orderMapper.mapAllToDto(orders);
+        return orderRepository
+        		.findAll()
+        		.stream()
+        		.map(orderMapper::mapToDto)
+        		.collect(Collectors.toList());
     }
 
     /* FETCH AN ORDER BY ORDER-ID */
@@ -87,7 +75,14 @@ public class OrderService {
                 .orElseThrow(() -> new AppAuthException(String.format(CUSTOMER_NOT_FOUND, customerId)));
 
         List<Order> customerOrderList = orderRepository.findAllByCustomer_CustomerId(customer.getCustomerId());
-        
+        return orderMapper.mapAllToDto(customerOrderList);
+    }
+    
+    @Transactional
+    public List<OrderResponse> findAllOrderForCustomer() {
+        Customer customer = authService.getCurrentCustomer();
+
+        List<Order> customerOrderList = orderRepository.findAllByCustomer_CustomerId(customer.getCustomerId());
         return orderMapper.mapAllToDto(customerOrderList);
     }
 

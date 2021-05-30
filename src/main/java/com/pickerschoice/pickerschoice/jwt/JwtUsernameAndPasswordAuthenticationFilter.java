@@ -13,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,17 +22,13 @@ import com.pickerschoice.pickerschoice.exception.AppAuthException;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 	
 	private AuthenticationManager authenticationManger;
-
-	public JwtUsernameAndPasswordAuthenticationFilter(AuthenticationManager authenticationManger) {
-		this.authenticationManger = authenticationManger;
-	}
 	
-	
-
 	// this method authenticate our user name and password
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
@@ -47,6 +44,7 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
 			return authenticate;
 			
 		} catch(IOException e) {
+			System.out.println(e.getMessage());
 			throw new AppAuthException(e.getMessage());
 		}
 	}
@@ -65,7 +63,8 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
 							.setExpiration(java.sql.Date.valueOf(LocalDate.now().plusWeeks(2)))
 							.signWith(Keys.hmacShaKeyFor(key.getBytes()))
 							.compact();
-				
+		
+		SecurityContextHolder.getContext().setAuthentication(authResult);
 		response.setHeader("Access-Control-Expose-Headers", "Authorization");	
 		response.addHeader("Authorization", token);
 	}

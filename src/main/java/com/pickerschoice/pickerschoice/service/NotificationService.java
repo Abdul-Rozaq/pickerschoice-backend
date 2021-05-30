@@ -24,6 +24,6 @@ public class NotificationService {
 	/* SAVE NOTIFICATION */
 	public Notification saveNotification(AppUserRole recipient, String message ) {
 		Notification notification = new Notification(null, message, LocalDateTime.now(), false, recipient);
-		return notificationRepository.save();
+		return null;
 	}
 }
